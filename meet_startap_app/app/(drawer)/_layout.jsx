@@ -85,6 +85,38 @@ export default function DrawerLayout() {
             ),
           }}
         />
+        <Drawer.Screen
+          name="report"
+          options={{
+            drawerLabel: "Report Incident",
+            title: "Report Incident",
+            drawerIcon: ({ color }) => (
+              <IconSymbol size={24} name="exclamationmark.triangle.fill" color={color} />
+            ),
+          }}
+        />
+        
+        <Drawer.Screen
+          name="upload-evidence"
+          options={{
+            drawerLabel: "Upload Evidence",
+            title: "Upload Evidence",
+            drawerIcon: ({ color }) => (
+              <IconSymbol size={24} name="square.and.arrow.up.fill" color={color} />
+            ),
+          }}
+        />
+        
+        <Drawer.Screen
+          name="Recording2"
+          options={{
+            drawerLabel: "Voice Setup",
+            title: "Voice Setup",
+            drawerIcon: ({ color }) => (
+              <IconSymbol size={24} name="mic.fill" color={color} />
+            ),
+          }}
+        />
       </Drawer>
     </GestureHandlerRootView>
   );
