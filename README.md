@@ -180,7 +180,7 @@ All data is stored in Appwrite Cloud.
 ### 1. Clone and install dependencies
 
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/fugazi-lab/amanor>
 cd meet_startap_app
 npm install
 ```
