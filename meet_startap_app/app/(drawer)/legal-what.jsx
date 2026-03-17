@@ -1,5 +1,5 @@
 /*
-    legal.jsx — your rights. styled to match AmanOr design.
+    legal-what.jsx — Workplace Sexual Harassment Definition.
     fonts: Otomanopee One + Ledger
 */
 
@@ -28,15 +28,16 @@ const C = {
 };
 
 const BULLETS = [
-  "Safe Workplace: Employers Must Prevent Harassment And Have Clear Reporting Procedures.",
-  "Report The Incident: You Can Report To The Workplace Harassment Officer, HR, Or A Manager. The Complaint Must Be Investigated Confidentially.",
-  "Protection: It Is Illegal For An Employer To Punish Or Fire You For Reporting Harassment.",
-  "Police Report: Serious Cases Can Be Reported To The Police.",
-  "Compensation: Victims May File A Claim In Labor Court And Receive Financial Compensation.",
-  "Privacy & Support: Your Identity Can Be Protected, And You Can Receive Legal And Emotional Support.",
+  "making sexual comments or jokes about a woman's body or appearance",
+  "sending sexual messages or pictures",
+  "touching someone without permission",
+  "repeatedly asking for dates or sexual favors after the person said no",
+  "threatening someone's job or promotion unless they agree to sexual behavior",
+  "creating a sexual or uncomfortable environment at work",
+  "even one serious incident can be considered sexual harassment.",
 ];
 
-export default function LegalScreen() {
+export default function LegalWhatScreen() {
   const router = useRouter();
 
   const [fontsLoaded] = useFonts({
@@ -70,24 +71,15 @@ export default function LegalScreen() {
       >
 
         {/* ── TITLE ── */}
-        <Text style={styles.title}>Your Rights</Text>
-
-        {/* ── LAW OVERVIEW ── */}
-        <Text style={styles.overviewText}>
-          Sexual Harassment Law In Israel:{"\n"}
-          Sexual Harassment Is Illegal Under The Prevention Of Sexual Harassment Law (Israel).
-        </Text>
-
-        <Text style={styles.overviewText}>
-          The Law Protects People In Workplaces, Schools, The Military, And Public Places.{"\n"}
-          Sexual Harassment Can Be Both A Criminal Offense (Police Can Punish The Offender) And A Civil Violation (The Victim Can Sue For Compensation).
-        </Text>
+        <Text style={styles.title}>Workplace Sexual Harassment Definition</Text>
 
         {/* ── DIVIDER ── */}
         <View style={styles.divider} />
 
-        {/* ── YOUR RIGHTS SUBHEADING ── */}
-        <Text style={styles.subheading}>Your Rights</Text>
+        {/* ── DEFINITION ── */}
+        <Text style={styles.definition}>
+          Sexual harassment is any unwanted behavior of a sexual nature that makes a person feel uncomfortable, unsafe, or humiliated it includes:
+        </Text>
 
         {/* ── BULLET POINTS ── */}
         <View style={styles.bulletList}>
@@ -99,7 +91,7 @@ export default function LegalScreen() {
           ))}
         </View>
 
-        <View style={{ height: 32 }} />
+        <View style={{ height: 36 }} />
 
         {/* ── BACK BUTTON ── */}
         <TouchableOpacity
@@ -118,21 +110,14 @@ export default function LegalScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: C.bg,
-  },
+  root: { flex: 1, backgroundColor: C.bg },
 
   topBulb: {
     paddingHorizontal: 24,
     paddingTop: 16,
     alignItems: "flex-start",
   },
-  bulb: {
-    width: 36,
-    height: 36,
-    opacity: 0.6,
-  },
+  bulb: { width: 36, height: 36, opacity: 0.6 },
 
   scroll: {
     paddingHorizontal: 28,
@@ -140,50 +125,36 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
 
-  // title
   title: {
     fontFamily: "OtomanopeeOne_400Regular",
-    fontSize: 40,
+    fontSize: 34,
     color: C.burgundy,
     textAlign: "center",
-    marginBottom: 24,
-    letterSpacing: 0.3,
+    lineHeight: 44,
+    marginBottom: 18,
+    letterSpacing: 0.2,
   },
 
-  // overview paragraphs
-  overviewText: {
+  divider: {
+    height: 1,
+    backgroundColor: C.divider,
+    marginBottom: 20,
+  },
+
+  definition: {
     fontFamily: "Ledger_400Regular",
     fontSize: 14,
     color: C.text,
     textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 16,
+    lineHeight: 23,
+    marginBottom: 24,
   },
 
-  // divider
-  divider: {
-    height: 1,
-    backgroundColor: C.divider,
-    marginVertical: 20,
-  },
-
-  // "Your Rights" subheading
-  subheading: {
-    fontFamily: "Ledger_400Regular",
-    fontSize: 16,
-    color: C.text,
-    textAlign: "center",
-    marginBottom: 16,
-  },
-
-  // bullet list
-  bulletList: {
-    gap: 12,
-  },
+  bulletList: { gap: 14 },
   bulletRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 8,
+    gap: 10,
   },
   bullet: {
     fontFamily: "Ledger_400Regular",
@@ -200,7 +171,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // back button
   backBtn: {
     backgroundColor: C.burgundy,
     borderRadius: 40,
