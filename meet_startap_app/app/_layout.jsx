@@ -10,8 +10,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
-  // Tells Expo Router to load the welcome screen first
-  initialRouteName: 'index', 
+  initialRouteName: 'index',
 };
 
 export default function RootLayout() {
@@ -20,16 +19,19 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        {/* The Welcome Screen */}
+        {/* 1. Welcome Screen */}
         <Stack.Screen name="index" options={{ headerShown: false }} />
 
-        {/* The Auth Screen (login / signup) */}
+        {/* 2. Auth Screen (login / signup) */}
         <Stack.Screen name="auth" options={{ headerShown: false }} />
-        
-        {/* The Main App (Drawer) */}
+
+        {/* 3. Home Screen (landing pad after login) */}
+        <Stack.Screen name="home" options={{ headerShown: false }} />
+
+        {/* 4. The Main App (Drawer) */}
         <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-        
-        {/* The Modal */}
+
+        {/* Modal */}
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
