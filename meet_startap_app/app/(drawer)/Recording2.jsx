@@ -279,6 +279,9 @@ export default function RecordingSetupScreen() {
         {/* ── Title ── */}
         <Text style={styles.title}>Set Up Voice-{"\n"}Activated Recording</Text>
 
+        {/* ── Thin rule under title ── */}
+        <View style={styles.rule} />
+
         {/* ── Divider ── */}
         <View style={styles.divider} />
 
@@ -338,9 +341,6 @@ export default function RecordingSetupScreen() {
           <Text style={styles.setupBtnText}>Set Up</Text>
         </TouchableOpacity>
       </ScrollView>
-
-      {/* ── Bottom Nav ── */}
-      <BottomNavBar active="Home" />
     </SafeAreaView>
   );
 }
@@ -352,33 +352,41 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cream,
   },
   topBulb: {
-    paddingHorizontal: 28,
+    paddingHorizontal: 24,
     paddingTop: 14,
     alignItems: "flex-start",
   },
   scroll: {
-    paddingHorizontal: 28,
-    paddingTop: 8,
-    paddingBottom: 24,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 32,
     alignItems: "center",
   },
 
-  // Title
+  // Large centered serif title
   title: {
-    fontSize: 30,
+    fontSize: 36,
     fontWeight: "800",
     color: COLORS.maroon,
     textAlign: "center",
     fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
-    lineHeight: 38,
-    letterSpacing: 0.2,
-    marginBottom: 16,
+    lineHeight: 44,
+    letterSpacing: 0.3,
+    marginBottom: 18,
     marginTop: 4,
   },
 
-  // Divider
+  // Thin rule below title
+  rule: {
+    width: "100%",
+    height: 1,
+    backgroundColor: COLORS.divider,
+    marginBottom: 18,
+  },
+
+  // Divider (kept for compatibility)
   divider: {
-    width: "88%",
+    width: "100%",
     height: 1,
     backgroundColor: COLORS.divider,
     marginBottom: 14,
@@ -386,114 +394,119 @@ const styles = StyleSheet.create({
 
   // Subtitle
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: COLORS.textMuted,
     textAlign: "center",
-    lineHeight: 21,
-    marginBottom: 28,
+    lineHeight: 23,
+    marginBottom: 32,
   },
 
   // Step section
   section: {
     width: "100%",
-    marginBottom: 22,
+    marginBottom: 28,
   },
   stepLabel: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
     color: COLORS.text,
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
-  // Input
+  // Full-border input (matches screenshot)
   input: {
     width: "100%",
-    height: 46,
-    borderWidth: 1,
+    height: 52,
+    borderWidth: 1.5,
     borderColor: COLORS.inputBorder,
-    borderRadius: 8,
+    borderRadius: 6,
     paddingHorizontal: 14,
     backgroundColor: COLORS.inputBg,
     fontSize: 14,
     color: COLORS.text,
   },
   hint: {
-    fontSize: 11.5,
+    fontSize: 12,
     color: COLORS.textLight,
-    marginTop: 5,
+    marginTop: 6,
   },
 
-  // Record button
+  // Record button — full width, mic left, text right
   recordBtn: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.maroon,
-    borderRadius: 14,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    gap: 10,
+    justifyContent: "flex-start",
+    backgroundColor: COLORS.maroonDark,
+    borderRadius: 18,
+    paddingVertical: 18,
+    paddingHorizontal: 22,
+    gap: 16,
     shadowColor: COLORS.maroonDark,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+    width: "100%",
   },
   recordBtnActive: {
     backgroundColor: COLORS.maroonLight,
   },
   recordBtnText: {
     color: COLORS.white,
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.2,
+    fontSize: 18,
+    fontWeight: "600",
+    letterSpacing: 0.3,
+    flex: 1,
+    textAlign: "center",
   },
   repeatHint: {
-    fontSize: 12,
+    fontSize: 12.5,
     color: COLORS.textMuted,
     textAlign: "center",
-    marginTop: 10,
+    marginTop: 12,
   },
 
   // Feedback
   feedbackRow: {
-    marginTop: 6,
+    marginTop: 8,
     alignItems: "center",
   },
   feedbackMuted: {
-    fontSize: 11.5,
+    fontSize: 12,
     color: COLORS.textLight,
     textAlign: "center",
+    lineHeight: 20,
   },
   feedbackOk: {
-    fontSize: 12.5,
+    fontSize: 13,
     color: COLORS.success,
     fontWeight: "600",
   },
   feedbackErr: {
-    fontSize: 12.5,
+    fontSize: 13,
     color: COLORS.error,
     fontWeight: "600",
   },
 
-  // Set Up button
+  // Set Up button — large pill
   setupBtn: {
     width: "100%",
     backgroundColor: COLORS.maroon,
-    borderRadius: 14,
-    paddingVertical: 17,
+    borderRadius: 40,
+    paddingVertical: 22,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 12,
     shadowColor: COLORS.maroonDark,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 5,
   },
   setupBtnText: {
     color: COLORS.white,
-    fontSize: 17,
-    fontWeight: "700",
-    letterSpacing: 0.4,
+    fontSize: 22,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
   },
 });

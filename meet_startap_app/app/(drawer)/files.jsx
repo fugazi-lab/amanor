@@ -1,9 +1,6 @@
 /*
     files.jsx — your media locker.
-    upload audio & video. it's yours, only you see it.
-
-    web    → uses 'appwrite' web SDK for ALL operations
-    native → uses 'react-native-appwrite' SDK for ALL operations
+    pick a file → give it a name, description, and company → upload.
 */
 
 import {
@@ -17,6 +14,9 @@ import {
   ActivityIndicator,
   RefreshControl,
   Platform,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
 } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useLocalSearchParams } from "expo-router";
@@ -50,7 +50,7 @@ const CFG = {
   bucketId:   "69b5e659000ecd76ce30",
 };
 
-// ── BUILD THE RIGHT CLIENT FOR THE PLATFORM ──────────────────
+// ── PLATFORM CLIENT ──────────────────────────────────────────
 let db, stor, Query, ID;
 
 if (Platform.OS === "web") {
@@ -98,14 +98,12 @@ const getErrMsg = (err) => {
   return err.message || err.response?.message || JSON.stringify(err) || "Unknown error.";
 };
 
-// build a public view URL without needing the SDK
 const getFileViewURL = (fileId) =>
   `${CFG.endpoint}/storage/buckets/${CFG.bucketId}/files/${fileId}/view?project=${CFG.projectId}`;
 
 // ── UPLOAD ───────────────────────────────────────────────────
 const uploadFile = async (asset) => {
   const fileId = ID.unique();
-
   if (Platform.OS === "web") {
     if (!asset.file) throw new Error("No file object. Try re-selecting the file.");
     return await stor.createFile(CFG.bucketId, fileId, asset.file);
@@ -149,7 +147,9 @@ function AudioRow({ file, url }) {
         <Text style={styles.fileEmoji}>🎵</Text>
       </View>
       <View style={styles.fileInfo}>
-        <Text style={styles.fileName} numberOfLines={1}>{file.fileName}</Text>
+        <Text style={styles.fileName} numberOfLines={1}>{file.name || file.fileName}</Text>
+        {!!file.company && <Text style={styles.fileCompany}>🏢 {file.company}</Text>}
+        {!!file.description && <Text style={styles.fileDesc} numberOfLines={2}>{file.description}</Text>}
         <Text style={styles.fileMeta}>{formatDate(file.$createdAt)}</Text>
       </View>
       <TouchableOpacity style={styles.playButton} onPress={togglePlay}>
@@ -167,6 +167,9 @@ function VideoRow({ file, url }) {
     <View style={styles.fileCard}>
       {expanded ? (
         <View style={{ width: "100%" }}>
+          <Text style={styles.fileName}>{file.name || file.fileName}</Text>
+          {!!file.company && <Text style={styles.fileCompany}>🏢 {file.company}</Text>}
+          {!!file.description && <Text style={styles.fileDesc}>{file.description}</Text>}
           <Video
             source={{ uri: url }}
             style={styles.videoPlayer}
@@ -184,7 +187,9 @@ function VideoRow({ file, url }) {
             <Text style={styles.fileEmoji}>🎬</Text>
           </View>
           <View style={styles.fileInfo}>
-            <Text style={styles.fileName} numberOfLines={1}>{file.fileName}</Text>
+            <Text style={styles.fileName} numberOfLines={1}>{file.name || file.fileName}</Text>
+            {!!file.company && <Text style={styles.fileCompany}>🏢 {file.company}</Text>}
+            {!!file.description && <Text style={styles.fileDesc} numberOfLines={2}>{file.description}</Text>}
             <Text style={styles.fileMeta}>{formatDate(file.$createdAt)}</Text>
           </View>
           <TouchableOpacity style={styles.playButton} onPress={() => setExpanded(true)}>
@@ -207,6 +212,13 @@ export default function FilesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [uploading, setUploading]   = useState(false);
 
+  // modal state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [pendingAsset, setPendingAsset] = useState(null);
+  const [inputName, setInputName]       = useState("");
+  const [inputCompany, setInputCompany] = useState("");
+  const [inputDesc, setInputDesc]       = useState("");
+
   // ── FETCH ─────────────────────────────────────────────────
   const fetchFiles = async () => {
     try {
@@ -215,18 +227,13 @@ export default function FilesScreen() {
         CFG.filesColId,
         [Query.search("username", user)]
       );
-
       const mine = res.documents.filter(
         (d) => d.username?.toLowerCase() === user.toLowerCase()
       );
-
-      // build view URLs directly — works on both web and native
       const urls = {};
       for (const f of mine) {
         urls[f.fileId] = getFileViewURL(f.fileId);
       }
-
-      console.log("Fetched", mine.length, "files for", user);
       setFiles(mine.reverse());
       setFileURLs(urls);
     } catch (err) {
@@ -245,22 +252,44 @@ export default function FilesScreen() {
 
   useEffect(() => { fetchFiles(); }, []);
 
-  // ── UPLOAD ────────────────────────────────────────────────
-  const handleUpload = async () => {
+  // ── STEP 1: pick file → open modal ────────────────────────
+  const handlePickFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ["audio/*", "video/*"],
         copyToCacheDirectory: true,
       });
-
       if (result.canceled) return;
 
       const asset = result.assets[0];
-      console.log("Picked:", asset.name, asset.mimeType, asset.size, "| platform:", Platform.OS);
+      const baseName = asset.name.replace(/\.[^/.]+$/, "");
+      setInputName(baseName);
+      setInputCompany("");
+      setInputDesc("");
+      setPendingAsset(asset);
+      setModalVisible(true);
+    } catch (err) {
+      Alert.alert("Error", getErrMsg(err));
+    }
+  };
 
-      setUploading(true);
+  // ── STEP 2: submit modal → upload ─────────────────────────
+  const handleSubmitUpload = async () => {
+    if (!inputName.trim()) {
+      Alert.alert("Name required", "Please give your file a name.");
+      return;
+    }
+    if (!inputCompany.trim()) {
+      Alert.alert("Company required", "Please enter the company name.");
+      return;
+    }
+    if (!pendingAsset) return;
 
-      const uploaded = await uploadFile(asset);
+    setModalVisible(false);
+    setUploading(true);
+
+    try {
+      const uploaded = await uploadFile(pendingAsset);
       console.log("Uploaded:", uploaded.$id);
 
       await db.createDocument(
@@ -268,22 +297,33 @@ export default function FilesScreen() {
         CFG.filesColId,
         ID.unique(),
         {
-          fileId:   uploaded.$id,
-          username: user,
-          fileName: asset.name,
-          mimeType: asset.mimeType || "application/octet-stream",
+          fileId:      uploaded.$id,
+          username:    user,
+          fileName:    pendingAsset.name,
+          mimeType:    pendingAsset.mimeType || "application/octet-stream",
+          name:        inputName.trim(),
+          company:     inputCompany.trim(),
+          description: inputDesc.trim(),
         }
       );
 
-      Alert.alert("Uploaded!", `"${asset.name}" is ready.`);
+      Alert.alert("Uploaded!", `"${inputName.trim()}" is ready.`);
       fetchFiles();
-
     } catch (err) {
       console.error("Upload error:", getErrMsg(err));
       Alert.alert("Upload failed", getErrMsg(err));
     } finally {
       setUploading(false);
+      setPendingAsset(null);
     }
+  };
+
+  const handleCancelModal = () => {
+    setModalVisible(false);
+    setPendingAsset(null);
+    setInputName("");
+    setInputCompany("");
+    setInputDesc("");
   };
 
   // ── RENDER ────────────────────────────────────────────────
@@ -305,7 +345,7 @@ export default function FilesScreen() {
       >
         <TouchableOpacity
           style={[styles.uploadButton, uploading && styles.uploadButtonDisabled]}
-          onPress={handleUpload}
+          onPress={handlePickFile}
           disabled={uploading}
           activeOpacity={0.82}
         >
@@ -340,7 +380,9 @@ export default function FilesScreen() {
                   <Text style={styles.fileEmoji}>📁</Text>
                 </View>
                 <View style={styles.fileInfo}>
-                  <Text style={styles.fileName}>{file.fileName}</Text>
+                  <Text style={styles.fileName}>{file.name || file.fileName}</Text>
+                  {!!file.company && <Text style={styles.fileCompany}>🏢 {file.company}</Text>}
+                  {!!file.description && <Text style={styles.fileDesc}>{file.description}</Text>}
                   <Text style={styles.fileMeta}>{formatDate(file.$createdAt)}</Text>
                 </View>
               </View>
@@ -348,6 +390,82 @@ export default function FilesScreen() {
           })
         )}
       </ScrollView>
+
+      {/* ── MODAL ── */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={modalVisible}
+        onRequestClose={handleCancelModal}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalTitle}>Name your file</Text>
+
+              {pendingAsset && (
+                <View style={styles.filePreview}>
+                  <Text style={styles.filePreviewEmoji}>
+                    {isAudio(pendingAsset.mimeType) ? "🎵" : "🎬"}
+                  </Text>
+                  <Text style={styles.filePreviewName} numberOfLines={1}>
+                    {pendingAsset.name}
+                  </Text>
+                </View>
+              )}
+
+              <Text style={styles.inputLabel}>Name *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="give it a name"
+                placeholderTextColor={C.brown}
+                value={inputName}
+                onChangeText={setInputName}
+                autoFocus
+              />
+
+              <Text style={styles.inputLabel}>Company *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="company name"
+                placeholderTextColor={C.brown}
+                value={inputCompany}
+                onChangeText={setInputCompany}
+              />
+
+              <Text style={styles.inputLabel}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="what's this about? (optional)"
+                placeholderTextColor={C.brown}
+                value={inputDesc}
+                onChangeText={setInputDesc}
+                multiline
+                numberOfLines={3}
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalBtn, styles.cancelBtn]}
+                  onPress={handleCancelModal}
+                >
+                  <Text style={styles.modalBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalBtn, styles.uploadBtn]}
+                  onPress={handleSubmitUpload}
+                >
+                  <Text style={[styles.modalBtnText, { fontWeight: "800" }]}>Upload</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -402,7 +520,9 @@ const styles = StyleSheet.create({
   },
   fileEmoji: { fontSize: 22 },
   fileInfo: { flex: 1 },
-  fileName: { fontSize: 14, fontWeight: "700", color: C.dark, marginBottom: 3 },
+  fileName: { fontSize: 14, fontWeight: "700", color: C.dark, marginBottom: 2 },
+  fileCompany: { fontSize: 12, color: C.burgundy, fontWeight: "600", marginBottom: 2 },
+  fileDesc: { fontSize: 12, color: "#6b5047", lineHeight: 17, marginBottom: 3 },
   fileMeta: { fontSize: 11, color: C.brown, fontStyle: "italic" },
 
   playButton: {
@@ -417,4 +537,42 @@ const styles = StyleSheet.create({
   },
   collapseButton: { marginTop: 8, alignItems: "center" },
   collapseText: { color: C.brown, fontSize: 12, fontStyle: "italic" },
+
+  modalOverlay: {
+    flex: 1, backgroundColor: "rgba(109,77,64,0.55)",
+    justifyContent: "center", alignItems: "center", padding: 20,
+  },
+  modalContent: {
+    width: "100%", maxHeight: "90%", backgroundColor: C.bg,
+    borderRadius: 20, padding: 22,
+    shadowColor: C.dark, shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25, shadowRadius: 20, elevation: 12,
+    borderTopWidth: 4, borderTopColor: C.pink,
+  },
+  modalTitle: { fontSize: 20, fontWeight: "900", color: C.dark, marginBottom: 16 },
+
+  filePreview: {
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "#fff", borderRadius: 10, padding: 10,
+    marginBottom: 18, borderWidth: 1, borderColor: "#f0e0d0",
+  },
+  filePreviewEmoji: { fontSize: 20, marginRight: 10 },
+  filePreviewName: { flex: 1, fontSize: 12, color: C.brown, fontStyle: "italic" },
+
+  inputLabel: {
+    fontSize: 12, fontWeight: "700", color: C.dark,
+    textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6,
+  },
+  input: {
+    borderWidth: 1.5, borderColor: C.brown, backgroundColor: "#fff",
+    borderRadius: 10, padding: 13, marginBottom: 14,
+    color: C.dark, fontSize: 15,
+  },
+  textArea: { height: 90, textAlignVertical: "top" },
+
+  modalButtons: { flexDirection: "row", gap: 12, marginTop: 4 },
+  modalBtn: { flex: 1, padding: 15, borderRadius: 12, alignItems: "center" },
+  cancelBtn: { backgroundColor: C.dark },
+  uploadBtn: { backgroundColor: C.pink },
+  modalBtnText: { color: "#fff", fontSize: 15 },
 });

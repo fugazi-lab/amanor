@@ -1,254 +1,228 @@
 /*
-    donate.jsx — because running this costs money and kindness is free.
-    links out to donation options. no pressure. but also, please.
+    donate.jsx — styled to match the AmanOr design.
+    fonts: Otomanopee One (title) + Ledger (body)
+    run first: npx expo install @expo-google-fonts/otomanopee-one @expo-google-fonts/ledger expo-font
 */
 
 import {
   StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
   View,
   Text,
-  Linking,
+  TextInput,
+  TouchableOpacity,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Image,
   Alert,
+  ActivityIndicator,
 } from "react-native";
+import { useState } from "react";
+import { useFonts } from "expo-font";
+import {
+  OtomanopeeOne_400Regular,
+} from "@expo-google-fonts/otomanopee-one";
+import {
+  Ledger_400Regular,
+} from "@expo-google-fonts/ledger";
 
 const C = {
-  bg:       "#fffaeb",
-  brown:    "#b38e75",
-  dark:     "#6d4d40",
-  pink:     "#d395a2",
-  burgundy: "#8b2c3a",
-};
-
-const DONATION_OPTIONS = [
-  {
-    id: "buymeacoffee",
-    emoji: "☕",
-    title: "Buy Me a Coffee",
-    desc: "a one-time small donation. the price of a latte. means a lot.",
-    url: "https://buymeacoffee.com/", // replace with your link
-    color: "#FFDD00",
-    textColor: "#6d4d40",
-  },
-  {
-    id: "paypal",
-    emoji: "💙",
-    title: "PayPal",
-    desc: "quick and easy. every bit helps keep the lights on.",
-    url: "https://paypal.me/", // replace with your link
-    color: "#003087",
-    textColor: "#fff",
-  },
-  {
-    id: "patreon",
-    emoji: "🎗️",
-    title: "Patreon",
-    desc: "become a recurring supporter. join the inner circle.",
-    url: "https://patreon.com/", // replace with your link
-    color: "#FF424D",
-    textColor: "#fff",
-  },
-];
-
-const openLink = async (url, title) => {
-  try {
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert("Couldn't open link", `Please visit: ${url}`);
-    }
-  } catch (err) {
-    Alert.alert("Error", "Couldn't open the link. Try again later.");
-  }
+  bg:       "#f5f0e0",   // warm cream — matches screenshot
+  burgundy: "#7a2035",   // deep burgundy for title + button
+  text:     "#3a2020",   // dark warm brown for body
+  muted:    "#9a8070",   // muted for placeholders
+  border:   "#9a8070",   // underline colour
+  white:    "#ffffff",
 };
 
 export default function DonateScreen() {
+  const [amount, setAmount]   = useState("");
+  const [payment, setPayment] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const [fontsLoaded] = useFonts({
+    OtomanopeeOne_400Regular,
+    Ledger_400Regular,
+  });
+
+  const handleDonate = () => {
+    if (!amount.trim() || !payment.trim()) {
+      Alert.alert("Missing info", "Please fill in both the amount and payment details.");
+      return;
+    }
+    setLoading(true);
+    // placeholder — wire up real payment here
+    setTimeout(() => {
+      setLoading(false);
+      Alert.alert("Thank you 💛", "Your donation means the world.");
+      setAmount("");
+      setPayment("");
+    }, 1200);
+  };
+
+  // show nothing until fonts are ready
+  if (!fontsLoaded) {
+    return (
+      <SafeAreaView style={[styles.root, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator color={C.burgundy} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.root}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
 
-      {/* ── HEADER ── */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Support Us 🙏</Text>
-        <Text style={styles.headerSub}>
-          this app is built with care and runs on donations.
-          if it's helped you, consider giving back.
-        </Text>
-      </View>
+          {/* ── LOGO ── */}
+          <View style={styles.logoWrap}>
+            <Image
+              source={require("../../assets/bulblogo.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+          {/* ── TITLE ── */}
+          <Text style={styles.title}>Donate</Text>
 
-        {/* ── WHY DONATE CARD ── */}
-        <View style={styles.whyCard}>
-          <Text style={styles.whyTitle}>Why donate?</Text>
-          <Text style={styles.whyText}>
-            This is a community-first platform — no ads, no data selling,
-            no corporate backing. Just real people supporting each other.
-            Donations go directly toward keeping the app running, improving
-            features, and making this space better for everyone.
+          {/* ── SUBTITLE ── */}
+          <Text style={styles.subtitle}>
+            Help Empower And Support Other Women
           </Text>
-        </View>
 
-        {/* ── DONATION OPTIONS ── */}
-        <Text style={styles.sectionLabel}>Choose a way to help</Text>
+          {/* ── SPACER ── */}
+          <View style={{ height: 48 }} />
 
-        {DONATION_OPTIONS.map((option) => (
+          {/* ── AMOUNT INPUT ── */}
+          <View style={styles.inputWrap}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter the donation amount:"
+              placeholderTextColor={C.muted}
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="numeric"
+            />
+          </View>
+
+          {/* ── SPACER ── */}
+          <View style={{ height: 40 }} />
+
+          {/* ── PAYMENT INPUT ── */}
+          <View style={styles.inputWrap}>
+            <TextInput
+              style={styles.input}
+              placeholder="Payment Details:"
+              placeholderTextColor={C.muted}
+              value={payment}
+              onChangeText={setPayment}
+            />
+          </View>
+
+          {/* ── SPACER pushes button to bottom ── */}
+          <View style={{ flex: 1, minHeight: 80 }} />
+
+          {/* ── DONATE BUTTON ── */}
           <TouchableOpacity
-            key={option.id}
-            style={styles.donateCard}
-            onPress={() => openLink(option.url, option.title)}
-            activeOpacity={0.82}
+            style={[styles.button, loading && { opacity: 0.7 }]}
+            onPress={handleDonate}
+            disabled={loading}
+            activeOpacity={0.85}
           >
-            <View style={[styles.donateIconBox, { backgroundColor: option.color }]}>
-              <Text style={styles.donateEmoji}>{option.emoji}</Text>
-            </View>
-            <View style={styles.donateBody}>
-              <Text style={styles.donateTitle}>{option.title}</Text>
-              <Text style={styles.donateDesc}>{option.desc}</Text>
-            </View>
-            <Text style={styles.donateArrow}>→</Text>
+            {loading ? (
+              <ActivityIndicator color={C.white} />
+            ) : (
+              <Text style={styles.buttonText}>Donate</Text>
+            )}
           </TouchableOpacity>
-        ))}
 
-        {/* ── THANK YOU NOTE ── */}
-        <View style={styles.thankYouBox}>
-          <Text style={styles.thankYouText}>
-            Even if you can't donate — just being here and using the app
-            means the world. thank you. genuinely. 💛
-          </Text>
-        </View>
-
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: C.bg },
-
-  header: {
-    backgroundColor: C.dark,
-    paddingVertical: 22,
-    paddingHorizontal: 20,
-    borderBottomWidth: 3,
-    borderBottomColor: C.burgundy,
-  },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: "900",
-    color: C.bg,
-    letterSpacing: -0.5,
-    marginBottom: 6,
-  },
-  headerSub: {
-    fontSize: 12,
-    color: C.brown,
-    fontStyle: "italic",
-    lineHeight: 18,
-  },
-
-  scroll: {
-    padding: 18,
-    paddingBottom: 48,
-  },
-
-  // why donate
-  whyCard: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 24,
-    borderLeftWidth: 4,
-    borderLeftColor: C.pink,
-    shadowColor: C.dark,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  whyTitle: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: C.dark,
-    marginBottom: 8,
-  },
-  whyText: {
-    fontSize: 13,
-    color: "#4a3530",
-    lineHeight: 20,
-  },
-
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: C.brown,
-    textTransform: "uppercase",
-    letterSpacing: 1.5,
-    marginBottom: 12,
-  },
-
-  // donation option cards
-  donateCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
-    shadowColor: C.dark,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  donateIconBox: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-  },
-  donateEmoji: {
-    fontSize: 24,
-  },
-  donateBody: {
+  root: {
     flex: 1,
+    backgroundColor: C.bg,
   },
-  donateTitle: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: C.dark,
-    marginBottom: 3,
-  },
-  donateDesc: {
-    fontSize: 12,
-    color: C.brown,
-    fontStyle: "italic",
-    lineHeight: 17,
-  },
-  donateArrow: {
-    fontSize: 18,
-    color: C.brown,
-    marginLeft: 8,
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: 28,
+    paddingTop: 24,
+    paddingBottom: 40,
   },
 
-  // thank you
-  thankYouBox: {
-    marginTop: 10,
-    backgroundColor: "#fff8f0",
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#f0e0d0",
+  // logo — top left, small
+  logoWrap: {
+    alignItems: "flex-start",
+    marginBottom: 32,
   },
-  thankYouText: {
-    fontSize: 13,
-    color: C.dark,
-    fontStyle: "italic",
-    lineHeight: 20,
+  logo: {
+    width: 48,
+    height: 48,
+  },
+
+  // title
+  title: {
+    fontFamily: "OtomanopeeOne_400Regular",
+    fontSize: 52,
+    color: C.burgundy,
     textAlign: "center",
+    marginBottom: 12,
+    letterSpacing: 1,
+  },
+
+  // subtitle
+  subtitle: {
+    fontFamily: "Ledger_400Regular",
+    fontSize: 14,
+    color: C.text,
+    textAlign: "center",
+    lineHeight: 22,
+    paddingHorizontal: 10,
+  },
+
+  // underline inputs
+  inputWrap: {
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
+  },
+  input: {
+    fontFamily: "Ledger_400Regular",
+    fontSize: 15,
+    color: C.text,
+    paddingVertical: 10,
+    paddingHorizontal: 0,
+  },
+
+  // donate button
+  button: {
+    backgroundColor: C.burgundy,
+    borderRadius: 40,
+    paddingVertical: 20,
+    alignItems: "center",
+    marginTop: 16,
+    shadowColor: C.burgundy,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  buttonText: {
+    fontFamily: "Ledger_400Regular",
+    fontSize: 22,
+    color: C.white,
+    letterSpacing: 1,
   },
 });
